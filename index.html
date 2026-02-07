@@ -6,7 +6,145 @@
 <title>♟ Royal Chess - Online Schach</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-/* Reset und Basisstile */
+/* Debug Panel Styles */
+.debug-panel {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 400px;
+  max-height: 300px;
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid #e74c3c;
+  border-radius: 10px;
+  z-index: 9999;
+  color: #fff;
+  font-family: monospace;
+  font-size: 12px;
+  overflow: hidden;
+  display: none;
+}
+
+.debug-header {
+  background: #e74c3c;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: move;
+}
+
+.debug-title {
+  font-weight: bold;
+  color: white;
+}
+
+.debug-close {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.debug-content {
+  padding: 10px;
+  overflow-y: auto;
+  max-height: 250px;
+}
+
+.debug-log {
+  margin: 3px 0;
+  padding: 4px;
+  border-radius: 3px;
+}
+
+.debug-log.info {
+  background: rgba(52, 152, 219, 0.2);
+  border-left: 3px solid #3498db;
+}
+
+.debug-log.success {
+  background: rgba(46, 204, 113, 0.2);
+  border-left: 3px solid #2ecc71;
+}
+
+.debug-log.error {
+  background: rgba(231, 76, 60, 0.2);
+  border-left: 3px solid #e74c3c;
+  color: #ff6b6b;
+}
+
+.debug-log.warning {
+  background: rgba(241, 196, 15, 0.2);
+  border-left: 3px solid #f1c40f;
+  color: #f1c40f;
+}
+
+.debug-status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 5px 10px;
+  font-family: monospace;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 9998;
+}
+
+.status-item {
+  margin-right: 15px;
+}
+
+.status-ok {
+  color: #2ecc71;
+}
+
+.status-error {
+  color: #e74c3c;
+}
+
+.status-warning {
+  color: #f1c40f;
+}
+
+.connection-status {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.connected {
+  background: #2ecc71;
+  animation: pulse 2s infinite;
+}
+
+.disconnected {
+  background: #e74c3c;
+}
+
+.connecting {
+  background: #f1c40f;
+  animation: blink 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Hauptstile */
 * {
   margin: 0;
   padding: 0;
@@ -19,6 +157,7 @@ body {
   color: #ecf0f1;
   min-height: 100vh;
   padding: 20px;
+  padding-bottom: 40px; /* Für Status-Bar Platz */
 }
 
 .container {
@@ -29,7 +168,6 @@ body {
   gap: 20px;
 }
 
-/* Header */
 header {
   grid-column: 1 / -1;
   text-align: center;
@@ -187,7 +325,7 @@ button {
   transition: all 0.3s;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   background: #2980b9;
   transform: translateY(-2px);
 }
@@ -195,6 +333,23 @@ button:hover {
 button:disabled {
   background: #7f8c8d;
   cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-danger {
+  background: #e74c3c;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #c0392b;
+}
+
+.btn-success {
+  background: #27ae60;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #229954;
 }
 
 /* Chat Bereich */
@@ -225,23 +380,77 @@ button:disabled {
   background: rgba(255, 255, 255, 0.07);
 }
 
-/* Notifications */
-.notification {
+/* Error Modal */
+.error-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.error-content {
+  background: #2c3e50;
+  padding: 30px;
+  border-radius: 15px;
+  max-width: 500px;
+  width: 90%;
+  border: 3px solid #e74c3c;
+}
+
+.error-title {
+  color: #e74c3c;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.error-details {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  font-family: monospace;
+  font-size: 12px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Loading Spinner */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+  border-top-color: #3498db;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Connection Test Button */
+#test-connection {
   position: fixed;
   top: 20px;
   right: 20px;
-  padding: 15px 20px;
-  background: #27ae60;
-  color: white;
-  border-radius: 10px;
-  z-index: 10000;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  animation: slideIn 0.3s ease;
+  background: #9b59b6;
+  z-index: 1000;
 }
 
-@keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+#test-connection:hover {
+  background: #8e44ad;
 }
 
 /* Responsive */
@@ -258,14 +467,79 @@ button:disabled {
   .square {
     font-size: 2.2rem;
   }
+  
+  .debug-panel {
+    width: 300px;
+  }
 }
 </style>
 </head>
 <body>
+
+<!-- Debug Panel -->
+<div class="debug-panel" id="debugPanel">
+  <div class="debug-header" id="debugHeader">
+    <div class="debug-title">
+      <i class="fas fa-bug"></i> Debug Console
+    </div>
+    <button class="debug-close" onclick="toggleDebug()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="debug-content" id="debugContent"></div>
+</div>
+
+<!-- Status Bar -->
+<div class="debug-status-bar" id="statusBar">
+  <div>
+    <span class="status-item">
+      <span class="connection-status" id="firebaseStatus"></span>
+      Firebase:
+      <span id="firebaseStatusText">Verbindung wird hergestellt...</span>
+    </span>
+    <span class="status-item">
+      <span id="playerStatus">Spieler: Nicht verbunden</span>
+    </span>
+    <span class="status-item">
+      <span id="gameStatus">Spiel: Kein aktives Spiel</span>
+    </span>
+  </div>
+  <div>
+    <button onclick="toggleDebug()" style="background: none; border: none; color: white; cursor: pointer; font-size: 12px;">
+      <i class="fas fa-terminal"></i> Debug
+    </button>
+    <button onclick="runConnectionTest()" style="background: none; border: none; color: white; cursor: pointer; font-size: 12px; margin-left: 10px;">
+      <i class="fas fa-wifi"></i> Test
+    </button>
+  </div>
+</div>
+
+<!-- Error Modal (hidden by default) -->
+<div class="error-modal" id="errorModal" style="display: none;">
+  <div class="error-content">
+    <div class="error-title">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span id="errorTitle">Verbindungsfehler</span>
+    </div>
+    <p id="errorMessage">Es konnte keine Verbindung zur Datenbank hergestellt werden.</p>
+    <div class="error-details" id="errorDetails"></div>
+    <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+      <button onclick="hideError()" style="background: #7f8c8d;">Schließen</button>
+      <button onclick="retryConnection()" class="btn-success">
+        <i class="fas fa-redo"></i> Erneut versuchen
+      </button>
+    </div>
+  </div>
+</div>
+
+<button id="test-connection" onclick="runConnectionTest()">
+  <i class="fas fa-plug"></i> Verbindung testen
+</button>
+
 <div class="container">
   <header>
     <h1><i class="fas fa-chess-king"></i> Royal Chess</h1>
-    <p class="subtitle">Online Schach spielen - Einfach und kostenlos</p>
+    <p class="subtitle">Online Schach spielen - Mit vollständigem Debug-System</p>
   </header>
   
   <main>
@@ -278,7 +552,7 @@ button:disabled {
         </div>
         
         <div style="display: flex; align-items: center; justify-content: center; padding: 0 20px;">
-          <div id="game-status" style="color: #3498db; font-weight: bold;"></div>
+          <div id="game-status-text" style="color: #3498db; font-weight: bold;"></div>
         </div>
         
         <div class="player-info" id="black-player">
@@ -309,8 +583,14 @@ button:disabled {
           <button onclick="joinRandomLobby()" id="random-btn">
             <i class="fas fa-random"></i> Schnellstart
           </button>
-          <button onclick="leaveGame()" id="leave-btn" disabled style="background: #e74c3c;">
+          <button onclick="leaveGame()" id="leave-btn" class="btn-danger" disabled>
             <i class="fas fa-sign-out-alt"></i> Verlassen
+          </button>
+        </div>
+        
+        <div class="input-group">
+          <button onclick="clearDatabase()" class="btn-danger" style="flex: 1;">
+            <i class="fas fa-trash"></i> DB zurücksetzen (DEV)
           </button>
         </div>
       </div>
@@ -319,7 +599,7 @@ button:disabled {
         <h3 style="margin-bottom: 15px;"><i class="fas fa-list"></i> Verfügbare Lobbys</h3>
         <div id="lobbies" style="max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px;">
           <div style="text-align: center; color: #95a5a6; padding: 20px;">
-            Lade Lobbys...
+            <div class="loading"></div> Lade Lobbys...
           </div>
         </div>
       </div>
@@ -329,7 +609,7 @@ button:disabled {
       <h2 style="margin-bottom: 20px;"><i class="fas fa-comments"></i> Chat</h2>
       <div id="chat">
         <div class="message" style="background: rgba(52, 152, 219, 0.1);">
-          <strong>System:</strong> Willkommen! Erstelle eine Lobby oder trete einer bei.
+          <strong>System:</strong> Debug-System aktiviert. Überprüfe die Statusleiste unten.
         </div>
       </div>
       <div class="input-group">
@@ -342,60 +622,267 @@ button:disabled {
 
 <script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0/chess.min.js"></script>
 <script type="module">
-// Debugging aktivieren
-console.log("Script wird geladen...");
+// ===================== DEBUG SYSTEM =====================
+class DebugSystem {
+  constructor() {
+    this.logs = [];
+    this.maxLogs = 100;
+    this.isVisible = false;
+    this.firebaseConnected = false;
+    this.lastConnectionTest = null;
+  }
+
+  log(message, type = 'info', details = null) {
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = {
+      timestamp,
+      message,
+      type,
+      details,
+      time: Date.now()
+    };
+    
+    this.logs.unshift(logEntry);
+    if (this.logs.length > this.maxLogs) {
+      this.logs.pop();
+    }
+    
+    // Console ausgabe
+    const consoleMethod = type === 'error' ? 'error' : 
+                         type === 'warning' ? 'warn' : 'log';
+    console[consoleMethod](`[${timestamp}] ${message}`, details || '');
+    
+    // UI Update
+    this.updateDebugPanel();
+    this.updateStatusBar();
+  }
+
+  updateDebugPanel() {
+    const content = document.getElementById('debugContent');
+    if (!content) return;
+    
+    content.innerHTML = this.logs.map(log => `
+      <div class="debug-log ${log.type}">
+        <div><strong>[${log.timestamp}]</strong> ${log.message}</div>
+        ${log.details ? `<div style="margin-top: 2px; font-size: 11px; color: #95a5a6;">${JSON.stringify(log.details, null, 2)}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  updateStatusBar() {
+    const firebaseStatus = document.getElementById('firebaseStatus');
+    const firebaseStatusText = document.getElementById('firebaseStatusText');
+    const playerStatus = document.getElementById('playerStatus');
+    const gameStatus = document.getElementById('gameStatus');
+    
+    if (firebaseStatus && firebaseStatusText) {
+      firebaseStatus.className = 'connection-status ' + 
+        (this.firebaseConnected ? 'connected' : 'disconnected');
+      firebaseStatusText.textContent = this.firebaseConnected ? 
+        'Verbunden' : 'Getrennt';
+      firebaseStatusText.style.color = this.firebaseConnected ? 
+        '#2ecc71' : '#e74c3c';
+    }
+    
+    // Update andere Status
+    if (playerStatus) {
+      playerStatus.textContent = `Spieler: ${window.playerName || 'Nicht verbunden'}`;
+    }
+    
+    if (gameStatus) {
+      const status = window.gameId ? `Spiel: ${window.gameId}` : 'Spiel: Kein aktives Spiel';
+      gameStatus.textContent = status;
+    }
+  }
+
+  showError(title, message, details = null) {
+    this.log(message, 'error', details);
+    
+    document.getElementById('errorTitle').textContent = title;
+    document.getElementById('errorMessage').textContent = message;
+    
+    if (details) {
+      let detailsText = typeof details === 'object' ? 
+        JSON.stringify(details, null, 2) : String(details);
+      document.getElementById('errorDetails').textContent = detailsText;
+      document.getElementById('errorDetails').style.display = 'block';
+    } else {
+      document.getElementById('errorDetails').style.display = 'none';
+    }
+    
+    document.getElementById('errorModal').style.display = 'flex';
+  }
+
+  setFirebaseStatus(connected) {
+    this.firebaseConnected = connected;
+    this.log(`Firebase ${connected ? 'verbunden' : 'getrennt'}`, 
+             connected ? 'success' : 'error');
+    this.updateStatusBar();
+  }
+}
+
+// Globale Debug Instanz
+const debug = new DebugSystem();
+
+// Debug Panel Toggle
+function toggleDebug() {
+  const panel = document.getElementById('debugPanel');
+  debug.isVisible = !debug.isVisible;
+  panel.style.display = debug.isVisible ? 'block' : 'none';
+  
+  if (debug.isVisible) {
+    debug.updateDebugPanel();
+    
+    // Make draggable
+    const header = document.getElementById('debugHeader');
+    header.onmousedown = function(e) {
+      e.preventDefault();
+      const panel = document.getElementById('debugPanel');
+      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      document.onmouseup = closeDragElement;
+      document.onmousemove = elementDrag;
+      
+      function elementDrag(e) {
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        panel.style.top = (panel.offsetTop - pos2) + "px";
+        panel.style.left = (panel.offsetLeft - pos1) + "px";
+      }
+      
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    };
+  }
+}
+
+function hideError() {
+  document.getElementById('errorModal').style.display = 'none';
+}
+
+function retryConnection() {
+  hideError();
+  initializeFirebase();
+}
+
+// ===================== FIREBASE INITIALISIERUNG =====================
+debug.log('Starte App-Initialisierung...', 'info');
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, update, push, onValue, remove, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// Firebase Konfiguration - DEINE ECHTEN DATEN
-const firebaseConfig = {
-  apiKey: "AIzaSyCEAG-c_hJV5SydzleMsTmid8CDmRSa9Y0",
-  authDomain: "online-chess-c5083.firebaseapp.com",
-  databaseURL: "https://online-chess-c5083-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "online-chess-c5083",
-  storageBucket: "online-chess-c5083.firebasestorage.app",
-  messagingSenderId: "851749075446",
-  appId: "1:851749075446:web:094a7321aeae337c08afd7"
-};
+let app;
+let db;
+let firebaseInitialized = false;
 
-console.log("Initialisiere Firebase...");
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-console.log("Firebase initialisiert:", db);
+async function initializeFirebase() {
+  try {
+    debug.log('Initialisiere Firebase...', 'info');
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyCEAG-c_hJV5SydzleMsTmid8CDmRSa9Y0",
+      authDomain: "online-chess-c5083.firebaseapp.com",
+      databaseURL: "https://online-chess-c5083-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "online-chess-c5083",
+      storageBucket: "online-chess-c5083.firebasestorage.app",
+      messagingSenderId: "851749075446",
+      appId: "1:851749075446:web:094a7321aeae337c08afd7"
+    };
 
-// Test Firebase-Verbindung
-const testRef = ref(db, 'test');
-set(testRef, { timestamp: Date.now() }).then(() => {
-  console.log("Firebase-Verbindung erfolgreich!");
-  showNotification("Mit Firebase verbunden", "success");
-}).catch(error => {
-  console.error("Firebase-Fehler:", error);
-  showNotification("Fehler bei Firebase-Verbindung", "error");
-});
+    debug.log('Firebase Config geladen:', 'info', {
+      projectId: firebaseConfig.projectId,
+      databaseURL: firebaseConfig.databaseURL
+    });
 
-// Globale Variablen
+    app = initializeApp(firebaseConfig);
+    db = getDatabase(app);
+    
+    debug.log('Firebase App initialisiert', 'success');
+    
+    // Teste Verbindung
+    await testFirebaseConnection();
+    
+    firebaseInitialized = true;
+    debug.setFirebaseStatus(true);
+    
+    // UI Elemente aktivieren
+    document.getElementById('create-btn').disabled = false;
+    document.getElementById('random-btn').disabled = false;
+    
+  } catch (error) {
+    debug.showError('Firebase Initialisierungsfehler', 
+                   'Konnte Firebase nicht initialisieren', error);
+    debug.setFirebaseStatus(false);
+    firebaseInitialized = false;
+  }
+}
+
+async function testFirebaseConnection() {
+  try {
+    debug.log('Teste Firebase-Verbindung...', 'info');
+    
+    const testRef = ref(db, 'connection_test');
+    const testData = {
+      timestamp: Date.now(),
+      userAgent: navigator.userAgent,
+      test: 'connection_test_' + Math.random().toString(36).substr(2, 9)
+    };
+    
+    debug.log('Schreibe Testdaten...', 'info', testData);
+    
+    await set(testRef, testData);
+    debug.log('✓ Schreibtest erfolgreich', 'success');
+    
+    const snapshot = await get(testRef);
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      debug.log('✓ Lesetest erfolgreich', 'success', data);
+      
+      // Lösche Testdaten
+      await remove(testRef);
+      debug.log('✓ Cleanup erfolgreich', 'success');
+      
+      return true;
+    } else {
+      throw new Error('Keine Daten zurückerhalten');
+    }
+  } catch (error) {
+    debug.showError('Verbindungstest fehlgeschlagen', 
+                   'Konnte nicht mit Firebase kommunizieren', error);
+    return false;
+  }
+}
+
+// ===================== GLOBALE VARIABLEN =====================
 let game = new Chess();
 let gameRef = null;
 let lobbyRef = null;
 let selectedSquare = null;
 let playerRole = null;
-let playerName = "Spieler";
+window.playerName = "Spieler";
 let lobbyId = null;
-let gameId = null;
+window.gameId = null;
 let playerId = Math.random().toString(36).substring(2, 15);
 let timers = { white: 600, black: 600 };
 let timerInterval = null;
 
-// Unicode Schachfiguren
+debug.log(`Spieler ID generiert: ${playerId}`, 'info');
+
+// ===================== SPIEL LOGIK =====================
 const pieceSymbols = {
   'p': '♟', 'n': '♞', 'b': '♝', 'r': '♜', 'q': '♛', 'k': '♚',
   'P': '♙', 'N': '♘', 'B': '♗', 'R': '♖', 'Q': '♕', 'K': '♔'
 };
 
-// Initialisiere das Spielbrett
 function initializeBoard() {
-  console.log("Initialisiere Board...");
+  debug.log('Initialisiere Schachbrett...', 'info');
   const boardElement = document.getElementById('board');
   boardElement.innerHTML = '';
   
@@ -413,7 +900,6 @@ function initializeBoard() {
   updateBoard();
 }
 
-// Aktualisiere das Brett
 function updateBoard() {
   const board = game.board();
   const squares = document.querySelectorAll('.square');
@@ -444,31 +930,31 @@ function updateBoard() {
   updateGameInfo();
 }
 
-// Handle Klick auf Feld
 function handleSquareClick(squareId) {
-  console.log("Klick auf:", squareId);
-  
   if (!playerRole) {
-    showNotification("Du bist noch nicht in einem Spiel!", "error");
+    debug.log('Kein Spieler-Rolle gesetzt - ignoriere Klick', 'warning');
+    return;
+  }
+  
+  if (!firebaseInitialized) {
+    debug.showError('Keine Verbindung', 'Bitte warte auf Firebase-Verbindung');
     return;
   }
   
   const piece = game.get(squareId);
   
   if (!selectedSquare) {
-    // Figur auswählen
     if (piece) {
-      // Prüfe ob Spieler die Figur besitzt
       const isWhite = piece.color === 'w';
       const ownsPiece = (isWhite && playerRole === 'white') || (!isWhite && playerRole === 'black');
       
       if (ownsPiece) {
         selectedSquare = squareId;
         updateBoard();
+        debug.log(`Figur ausgewählt: ${squareId}`, 'info');
       }
     }
   } else {
-    // Zug versuchen
     try {
       const move = game.move({
         from: selectedSquare,
@@ -476,56 +962,61 @@ function handleSquareClick(squareId) {
         promotion: 'q'
       });
       
-      console.log("Zug ausgeführt:", move);
+      debug.log(`Zug ausgeführt: ${selectedSquare} → ${squareId}`, 'success', move);
       selectedSquare = null;
       updateBoard();
       
-      // In Firebase speichern
       if (gameRef) {
         update(gameRef, {
           fen: game.fen(),
           turn: game.turn(),
-          lastMove: { from: move.from, to: move.to }
+          lastMove: { from: move.from, to: move.to },
+          lastUpdate: Date.now()
         }).then(() => {
-          console.log("Spiel aktualisiert");
+          debug.log('Spielstatus in Firebase aktualisiert', 'info');
         }).catch(error => {
-          console.error("Fehler beim Update:", error);
+          debug.showError('Update fehlgeschlagen', 'Konnte Spiel nicht aktualisieren', error);
         });
       }
       
       checkGameStatus();
       
     } catch (error) {
-      console.log("Ungültiger Zug:", error);
+      debug.log(`Ungültiger Zug: ${selectedSquare} → ${squareId}`, 'warning', error.message);
       selectedSquare = null;
       updateBoard();
     }
   }
 }
 
-// Lobby erstellen
+// ===================== LOBBY FUNKTIONEN =====================
 window.createLobby = async function() {
+  if (!firebaseInitialized) {
+    debug.showError('Keine Verbindung', 'Bitte warte auf Firebase-Verbindung');
+    return;
+  }
+  
   try {
-    console.log("Erstelle Lobby...");
+    window.playerName = document.getElementById('username').value.trim() || 'Spieler';
+    const lobbyName = document.getElementById('lobby-name').value.trim() || `${window.playerName}'s Lobby`;
     
-    playerName = document.getElementById('username').value.trim() || 'Spieler';
-    const lobbyName = document.getElementById('lobby-name').value.trim() || `${playerName}'s Lobby`;
-    
-    if (!playerName) {
-      showNotification("Bitte gib einen Namen ein!", "error");
+    if (!window.playerName) {
+      debug.showError('Fehlender Name', 'Bitte gib einen Namen ein');
       return;
     }
     
-    // Erstelle eindeutige ID
+    debug.log('Erstelle Lobby...', 'info', { lobbyName, playerName: window.playerName });
+    
+    // Erstelle eindeutige Lobby ID
     lobbyId = 'lobby_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
     lobbyRef = ref(db, `lobbies/${lobbyId}`);
     
-    console.log("Lobby ID:", lobbyId);
+    debug.log(`Lobby ID: ${lobbyId}`, 'info');
     
     // Lobby in Firebase erstellen
     await set(lobbyRef, {
       name: lobbyName,
-      host: playerName,
+      host: window.playerName,
       hostId: playerId,
       players: { white: playerId },
       status: 'waiting',
@@ -533,49 +1024,51 @@ window.createLobby = async function() {
       timeControl: '600'
     });
     
-    console.log("Lobby erstellt");
+    debug.log('Lobby erfolgreich erstellt', 'success');
     
     // Spieler als Weiß setzen
     playerRole = 'white';
     
     // Spiel in Firebase erstellen
-    gameId = lobbyId;
-    gameRef = ref(db, `games/${gameId}`);
+    window.gameId = lobbyId;
+    gameRef = ref(db, `games/${window.gameId}`);
     
     await set(gameRef, {
       fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       turn: 'w',
       status: 'waiting',
       players: { white: playerId, black: null },
-      playerNames: { white: playerName, black: null },
-      createdAt: Date.now()
+      playerNames: { white: window.playerName, black: null },
+      createdAt: Date.now(),
+      chat: []
     });
     
-    console.log("Spiel erstellt");
+    debug.log('Spiel erfolgreich erstellt', 'success');
     
     // UI aktualisieren
-    document.getElementById('create-btn').disabled = true;
-    document.getElementById('random-btn').disabled = true;
-    document.getElementById('leave-btn').disabled = false;
+    updateUIForGame();
     
-    showNotification(`Lobby "${lobbyName}" erstellt!`, "success");
+    debug.log(`Lobby "${lobbyName}" erstellt und wartet auf Gegner`, 'success');
     addChatMessage("System", `Lobby "${lobbyName}" erstellt. Warte auf Gegner...`);
     
     // Spiel starten
     startGame();
     
   } catch (error) {
-    console.error("Fehler beim Erstellen der Lobby:", error);
-    showNotification("Fehler beim Erstellen der Lobby", "error");
+    debug.showError('Lobby-Erstellung fehlgeschlagen', 'Fehler beim Erstellen der Lobby', error);
   }
 };
 
-// Zufällige Lobby beitreten
 window.joinRandomLobby = async function() {
+  if (!firebaseInitialized) {
+    debug.showError('Keine Verbindung', 'Bitte warte auf Firebase-Verbindung');
+    return;
+  }
+  
   try {
-    console.log("Suche zufällige Lobby...");
+    window.playerName = document.getElementById('username').value.trim() || 'Spieler';
     
-    playerName = document.getElementById('username').value.trim() || 'Spieler';
+    debug.log('Suche verfügbare Lobbys...', 'info');
     
     const lobbiesRef = ref(db, 'lobbies');
     const snapshot = await get(lobbiesRef);
@@ -586,157 +1079,100 @@ window.joinRandomLobby = async function() {
         .filter(([id, lobby]) => lobby.status === 'waiting')
         .map(([id, lobby]) => ({ id, ...lobby }));
       
+      debug.log(`Verfügbare Lobbys gefunden: ${availableLobbies.length}`, 'info');
+      
       if (availableLobbies.length > 0) {
         const randomLobby = availableLobbies[Math.floor(Math.random() * availableLobbies.length)];
-        
-        console.log("Beitrete Lobby:", randomLobby.id);
+        debug.log(`Trete zufälliger Lobby bei: ${randomLobby.id}`, 'info', randomLobby);
         await joinSpecificLobby(randomLobby.id);
-        
       } else {
-        showNotification("Keine verfügbaren Lobbys gefunden", "warning");
+        debug.showError('Keine Lobbys verfügbar', 'Erstelle eine neue Lobby oder versuche es später erneut');
       }
     } else {
-      showNotification("Keine Lobbys verfügbar", "warning");
+      debug.showError('Keine Lobbys gefunden', 'Die Datenbank ist leer. Erstelle eine neue Lobby.');
     }
   } catch (error) {
-    console.error("Fehler beim Beitritt:", error);
-    showNotification("Fehler beim Beitritt", "error");
+    debug.showError('Beitritt fehlgeschlagen', 'Fehler beim Beitreten einer Lobby', error);
   }
 };
 
-// Bestimmte Lobby beitreten
 async function joinSpecificLobby(id) {
   try {
+    debug.log(`Trete Lobby bei: ${id}`, 'info');
+    
     lobbyId = id;
     lobbyRef = ref(db, `lobbies/${lobbyId}`);
     
     const lobbySnapshot = await get(lobbyRef);
     if (!lobbySnapshot.exists()) {
-      showNotification("Lobby existiert nicht mehr", "error");
+      debug.showError('Lobby nicht gefunden', 'Die Lobby existiert nicht mehr');
       return;
     }
     
     const lobby = lobbySnapshot.val();
+    debug.log('Lobby-Daten:', 'info', lobby);
     
     // Prüfe welche Farbe verfügbar ist
     if (!lobby.players.white) {
       playerRole = 'white';
-      await update(lobbyRef, {
-        'players/white': playerId,
-        status: 'playing'
-      });
+      debug.log('Spiele als Weiß', 'info');
     } else if (!lobby.players.black) {
       playerRole = 'black';
-      await update(lobbyRef, {
-        'players/black': playerId,
-        status: 'playing'
-      });
+      debug.log('Spiele als Schwarz', 'info');
     } else {
-      showNotification("Lobby ist bereits voll!", "error");
+      debug.showError('Lobby voll', 'Die Lobby ist bereits voll');
       return;
     }
     
+    // Lobby aktualisieren
+    await update(lobbyRef, {
+      [`players/${playerRole}`]: playerId,
+      status: 'playing'
+    });
+    
+    debug.log('Lobby erfolgreich beigetreten', 'success');
+    
     // Spiel beitreten
-    gameId = lobbyId;
-    gameRef = ref(db, `games/${gameId}`);
+    window.gameId = lobbyId;
+    gameRef = ref(db, `games/${window.gameId}`);
     
     await update(gameRef, {
       [`players/${playerRole}`]: playerId,
-      [`playerNames/${playerRole}`]: playerName,
-      status: 'active'
+      [`playerNames/${playerRole}`]: window.playerName,
+      status: 'active',
+      lastUpdate: Date.now()
     });
     
-    // UI aktualisieren
-    document.getElementById('create-btn').disabled = true;
-    document.getElementById('random-btn').disabled = true;
-    document.getElementById('leave-btn').disabled = false;
+    debug.log('Spiel erfolgreich beigetreten', 'success');
     
-    showNotification(`Beigetreten zu "${lobby.name}"`, "success");
+    // UI aktualisieren
+    updateUIForGame();
+    
+    debug.log(`Beigetreten zu "${lobby.name}" als ${playerRole}`, 'success');
+    addChatMessage("System", `${window.playerName} ist dem Spiel beigetreten als ${playerRole === 'white' ? 'Weiß' : 'Schwarz'}!`);
     
     // Spiel starten
     startGame();
     
-    addChatMessage("System", `${playerName} ist dem Spiel beigetreten!`);
-    
   } catch (error) {
-    console.error("Fehler beim Beitritt:", error);
-    showNotification("Fehler beim Beitritt", "error");
+    debug.showError('Beitritt fehlgeschlagen', 'Fehler beim Beitreten der Lobby', error);
   }
 }
 
-// Spiel starten
-function startGame() {
-  console.log("Starte Spiel...");
+function updateUIForGame() {
+  document.getElementById('create-btn').disabled = true;
+  document.getElementById('random-btn').disabled = true;
+  document.getElementById('leave-btn').disabled = false;
   
-  // Listener für Spielupdates
-  onValue(gameRef, (snapshot) => {
-    if (snapshot.exists()) {
-      const gameData = snapshot.val();
-      console.log("Spielupdate:", gameData);
-      
-      // Lade Spielposition
-      if (gameData.fen && gameData.fen !== game.fen()) {
-        game.load(gameData.fen);
-        updateBoard();
-      }
-      
-      // Aktualisiere Spielernamen
-      if (gameData.playerNames) {
-        document.getElementById('white-name').textContent = gameData.playerNames.white || 'Warten...';
-        document.getElementById('black-name').textContent = gameData.playerNames.black || 'Warten...';
-      }
-      
-      // Aktiviere/Deaktiviere je nach Zugrecht
-      const isMyTurn = (game.turn() === 'w' && playerRole === 'white') || 
-                       (game.turn() === 'b' && playerRole === 'black');
-      
-      document.getElementById('game-status').textContent = isMyTurn ? 'Du bist am Zug' : 'Gegner am Zug';
-    }
-  });
+  document.getElementById('username').disabled = true;
+  document.getElementById('lobby-name').disabled = true;
   
-  // Listener für Chat
-  const chatRef = ref(db, `games/${gameId}/chat`);
-  onChildAdded(chatRef, (snapshot) => {
-    const message = snapshot.val();
-    if (message && message.sender !== playerId) {
-      addChatMessage(message.senderName, message.text);
-    }
-  });
-  
-  // Timer starten
-  startTimers();
+  debug.updateStatusBar();
 }
 
-// Timer starten
-function startTimers() {
-  if (timerInterval) clearInterval(timerInterval);
-  
-  timerInterval = setInterval(() => {
-    if (game.turn() === 'w') {
-      timers.white = Math.max(0, timers.white - 1);
-      document.getElementById('white-timer').textContent = formatTime(timers.white);
-    } else {
-      timers.black = Math.max(0, timers.black - 1);
-      document.getElementById('black-timer').textContent = formatTime(timers.black);
-    }
-    
-    // Zeitüberschreitung
-    if (timers.white <= 0 || timers.black <= 0) {
-      endGame('time');
-    }
-  }, 1000);
-}
-
-// Formatiere Zeit
-function formatTime(seconds) {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-// Lade Lobbys
 function loadLobbies() {
-  console.log("Lade Lobbys...");
+  debug.log('Starte Lobby-Loader...', 'info');
+  
   const lobbiesRef = ref(db, 'lobbies');
   
   onValue(lobbiesRef, (snapshot) => {
@@ -746,11 +1182,14 @@ function loadLobbies() {
       const lobbies = snapshot.val();
       const lobbyArray = Object.entries(lobbies)
         .filter(([id, lobby]) => lobby.status === 'waiting')
-        .slice(0, 5); // Nur 5 Lobbys anzeigen
+        .slice(0, 10);
+      
+      debug.log(`Lobbys geladen: ${lobbyArray.length}`, 'info');
       
       if (lobbyArray.length === 0) {
         lobbiesContainer.innerHTML = `
           <div style="text-align: center; padding: 20px; color: #95a5a6;">
+            <i class="fas fa-door-closed"></i><br>
             Keine offenen Lobbys verfügbar
           </div>
         `;
@@ -767,17 +1206,25 @@ function loadLobbies() {
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            transition: all 0.3s;
           `;
+          lobbyElement.onmouseover = () => lobbyElement.style.background = 'rgba(255, 255, 255, 0.1)';
+          lobbyElement.onmouseout = () => lobbyElement.style.background = 'rgba(255, 255, 255, 0.05)';
           lobbyElement.onclick = () => joinSpecificLobby(id);
+          
+          const playerCount = (lobby.players.white ? 1 : 0) + (lobby.players.black ? 1 : 0);
           
           lobbyElement.innerHTML = `
             <div>
               <div style="font-weight: bold;">${lobby.name}</div>
-              <div style="font-size: 0.9rem; color: #95a5a6;">Host: ${lobby.host}</div>
+              <div style="font-size: 0.9rem; color: #95a5a6;">
+                <i class="fas fa-crown"></i> ${lobby.host}
+              </div>
             </div>
             <div>
-              <span style="background: #3498db; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.8rem;">
-                ${lobby.players.white ? '1/2' : '0/2'}
+              <span style="background: ${playerCount === 2 ? '#e74c3c' : '#3498db'}; 
+                           color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.8rem;">
+                ${playerCount}/2 Spieler
               </span>
             </div>
           `;
@@ -787,56 +1234,179 @@ function loadLobbies() {
     } else {
       lobbiesContainer.innerHTML = `
         <div style="text-align: center; padding: 20px; color: #95a5a6;">
-          Keine Lobbys verfügbar
+          <i class="fas fa-database"></i><br>
+          Keine Lobbys in der Datenbank
         </div>
       `;
+      debug.log('Keine Lobbys in der Datenbank', 'warning');
     }
+  }, (error) => {
+    debug.showError('Lobby-Loader Fehler', 'Konnte Lobbys nicht laden', error);
   });
 }
 
-// Lobby verlassen
 window.leaveGame = async function() {
-  if (!lobbyId) return;
+  if (!lobbyId) {
+    debug.log('Keine Lobby zum Verlassen', 'warning');
+    return;
+  }
   
-  try {
-    if (lobbyRef) {
+  if (confirm('Möchtest du die Lobby wirklich verlassen?')) {
+    try {
+      debug.log('Verlasse Lobby...', 'info', { lobbyId });
+      
       const lobbySnapshot = await get(lobbyRef);
       if (lobbySnapshot.exists()) {
         const lobby = lobbySnapshot.val();
         
         if (lobby.hostId === playerId) {
           // Host verlässt - Lobby löschen
+          debug.log('Host verlässt - lösche Lobby', 'info');
           await remove(lobbyRef);
           if (gameRef) await remove(gameRef);
-          showNotification('Lobby gelöscht', 'info');
+          debug.log('Lobby gelöscht', 'success');
         } else {
           // Spieler entfernen
+          debug.log('Spieler entfernt sich aus Lobby', 'info');
           await update(lobbyRef, {
             [`players/${playerRole}`]: null,
             status: 'waiting'
           });
           
           if (gameRef) {
-            await update(ref(db, `games/${gameId}/players`), {
+            await update(ref(db, `games/${window.gameId}/players`), {
               [playerRole]: null
             });
             
-            addChatMessage('System', `${playerName} hat das Spiel verlassen.`);
+            addChatMessage('System', `${window.playerName} hat das Spiel verlassen.`);
           }
         }
       }
+      
+      resetGame();
+      debug.log('Lobby erfolgreich verlassen', 'success');
+      
+    } catch (error) {
+      debug.showError('Verlassen fehlgeschlagen', 'Fehler beim Verlassen der Lobby', error);
     }
-    
-    resetGame();
-    showNotification('Lobby verlassen', 'info');
-    
-  } catch (error) {
-    console.error('Fehler beim Verlassen:', error);
-    showNotification('Fehler beim Verlassen', 'error');
   }
 };
 
-// Spiel zurücksetzen
+async function clearDatabase() {
+  if (confirm('⚠️ WARNUNG: Alle Daten in der Datenbank löschen?\nNur für Entwicklung verwenden!')) {
+    try {
+      debug.log('Starte Datenbank-Cleanup...', 'warning');
+      
+      // Lösche alle Lobbys
+      const lobbiesRef = ref(db, 'lobbies');
+      const lobbiesSnapshot = await get(lobbiesRef);
+      
+      if (lobbiesSnapshot.exists()) {
+        const lobbies = lobbiesSnapshot.val();
+        const deletePromises = Object.keys(lobbies).map(lobbyId => 
+          remove(ref(db, `lobbies/${lobbyId}`))
+        );
+        
+        await Promise.all(deletePromises);
+        debug.log(`${deletePromises.length} Lobbys gelöscht`, 'success');
+      }
+      
+      // Lösche alle Spiele
+      const gamesRef = ref(db, 'games');
+      const gamesSnapshot = await get(gamesRef);
+      
+      if (gamesSnapshot.exists()) {
+        const games = gamesSnapshot.val();
+        const deletePromises = Object.keys(games).map(gameId => 
+          remove(ref(db, `games/${gameId}`))
+        );
+        
+        await Promise.all(deletePromises);
+        debug.log(`${deletePromises.length} Spiele gelöscht`, 'success');
+      }
+      
+      debug.log('Datenbank erfolgreich bereinigt', 'success');
+      addChatMessage('System', 'Datenbank wurde zurückgesetzt.');
+      
+    } catch (error) {
+      debug.showError('Cleanup fehlgeschlagen', 'Fehler beim Löschen der Datenbank', error);
+    }
+  }
+}
+
+function startGame() {
+  debug.log('Starte Spiel...', 'info', { gameId: window.gameId, playerRole });
+  
+  // Listener für Spielupdates
+  onValue(gameRef, (snapshot) => {
+    if (snapshot.exists()) {
+      const gameData = snapshot.val();
+      
+      if (gameData.fen && gameData.fen !== game.fen()) {
+        debug.log('Spielposition aktualisiert', 'info', { fen: gameData.fen });
+        game.load(gameData.fen);
+        updateBoard();
+      }
+      
+      if (gameData.playerNames) {
+        document.getElementById('white-name').textContent = gameData.playerNames.white || 'Warten...';
+        document.getElementById('black-name').textContent = gameData.playerNames.black || 'Warten...';
+      }
+      
+      const isMyTurn = (game.turn() === 'w' && playerRole === 'white') || 
+                       (game.turn() === 'b' && playerRole === 'black');
+      
+      document.getElementById('game-status-text').textContent = isMyTurn ? 'Du bist am Zug' : 'Gegner am Zug';
+      document.getElementById('game-status-text').style.color = isMyTurn ? '#2ecc71' : '#e74c3c';
+      
+    } else {
+      debug.log('Spiel-Daten nicht gefunden', 'warning');
+    }
+  }, (error) => {
+    debug.showError('Spiel-Listener Fehler', 'Konnte Spiel-Updates nicht empfangen', error);
+  });
+  
+  // Chat Listener
+  const chatRef = ref(db, `games/${window.gameId}/chat`);
+  onChildAdded(chatRef, (snapshot) => {
+    const message = snapshot.val();
+    if (message && message.sender !== playerId) {
+      addChatMessage(message.senderName, message.text);
+    }
+  }, (error) => {
+    debug.showError('Chat-Listener Fehler', 'Konnte Chat-Nachrichten nicht empfangen', error);
+  });
+  
+  // Timer starten
+  startTimers();
+  
+  debug.log('Spiel erfolgreich gestartet', 'success');
+}
+
+function startTimers() {
+  if (timerInterval) clearInterval(timerInterval);
+  
+  timerInterval = setInterval(() => {
+    if (game.turn() === 'w') {
+      timers.white = Math.max(0, timers.white - 1);
+      document.getElementById('white-timer').textContent = formatTime(timers.white);
+    } else {
+      timers.black = Math.max(0, timers.black - 1);
+      document.getElementById('black-timer').textContent = formatTime(timers.black);
+    }
+    
+    if (timers.white <= 0 || timers.black <= 0) {
+      endGame('time');
+    }
+  }, 1000);
+}
+
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
 function resetGame() {
   game = new Chess();
   gameRef = null;
@@ -844,7 +1414,7 @@ function resetGame() {
   selectedSquare = null;
   playerRole = null;
   lobbyId = null;
-  gameId = null;
+  window.gameId = null;
   timers = { white: 600, black: 600 };
   
   if (timerInterval) {
@@ -856,38 +1426,50 @@ function resetGame() {
   document.getElementById('random-btn').disabled = false;
   document.getElementById('leave-btn').disabled = true;
   
+  document.getElementById('username').disabled = false;
+  document.getElementById('lobby-name').disabled = false;
+  
   document.getElementById('white-name').textContent = 'Nicht verbunden';
   document.getElementById('black-name').textContent = 'Nicht verbunden';
   document.getElementById('white-timer').textContent = '10:00';
   document.getElementById('black-timer').textContent = '10:00';
-  document.getElementById('game-status').textContent = '';
+  document.getElementById('game-status-text').textContent = '';
   
   updateBoard();
+  debug.updateStatusBar();
+  debug.log('Spiel zurückgesetzt', 'info');
 }
 
-// Chat
+// ===================== CHAT SYSTEM =====================
 window.sendMessage = async function() {
   const messageInput = document.getElementById('message');
   const text = messageInput.value.trim();
   
-  if (!text || !gameId || text.length === 0) return;
+  if (!text || !window.gameId || text.length === 0) return;
+  
+  if (!firebaseInitialized) {
+    debug.showError('Keine Verbindung', 'Bitte warte auf Firebase-Verbindung');
+    return;
+  }
   
   try {
-    const chatRef = ref(db, `games/${gameId}/chat`);
+    const chatRef = ref(db, `games/${window.gameId}/chat`);
     await push(chatRef, {
       text: text,
       sender: playerId,
-      senderName: playerName,
+      senderName: window.playerName,
       timestamp: Date.now()
     });
     
-    // Lokal hinzufügen
-    addChatMessage(playerName, text);
+    addChatMessage(window.playerName, text);
     
     messageInput.value = '';
     messageInput.focus();
+    
+    debug.log('Chat-Nachricht gesendet', 'info', { text: text.substring(0, 50) + (text.length > 50 ? '...' : '') });
+    
   } catch (error) {
-    console.error('Fehler beim Senden:', error);
+    debug.showError('Chat-Fehler', 'Nachricht konnte nicht gesendet werden', error);
   }
 };
 
@@ -900,9 +1482,9 @@ function addChatMessage(sender, text) {
   chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-// Spielstatus prüfen
+// ===================== UTILITY FUNKTIONEN =====================
 function checkGameStatus() {
-  const statusElement = document.getElementById('game-status');
+  const statusElement = document.getElementById('game-status-text');
   
   if (game.isCheckmate()) {
     const winner = game.turn() === 'w' ? 'Schwarz' : 'Weiß';
@@ -937,44 +1519,101 @@ function endGame(reason, winner = null) {
       break;
   }
   
-  showNotification(message, 'info');
+  debug.log(`Spiel beendet: ${reason}`, 'info', { message });
   addChatMessage('System', `Spiel beendet: ${message}`);
-}
-
-// Notification anzeigen
-function showNotification(message, type = 'info') {
-  console.log("Notification:", message);
   
-  const notification = document.createElement('div');
-  notification.className = 'notification';
-  notification.textContent = message;
-  
-  if (type === 'error') {
-    notification.style.background = '#e74c3c';
-  } else if (type === 'warning') {
-    notification.style.background = '#f39c12';
-  } else if (type === 'success') {
-    notification.style.background = '#27ae60';
-  }
-  
-  document.body.appendChild(notification);
-  
-  setTimeout(() => {
-    notification.remove();
-  }, 3000);
+  alert(`Spiel beendet!\n${message}`);
 }
 
 function updateGameInfo() {
-  // Hier kannst du zusätzliche Spielinfos aktualisieren
+  // Zusätzliche Spielinfos
 }
 
-// Initialisiere das Spiel
-initializeBoard();
-loadLobbies();
+window.runConnectionTest = async function() {
+  debug.log('Manueller Verbindungstest gestartet', 'info');
+  
+  try {
+    const success = await testFirebaseConnection();
+    if (success) {
+      debug.showError('✓ Verbindungstest erfolgreich', 
+                     'Die Verbindung zur Datenbank funktioniert einwandfrei.');
+    }
+  } catch (error) {
+    debug.showError('Verbindungstest fehlgeschlagen', 
+                   'Überprüfe deine Firebase-Konfiguration und Security Rules', error);
+  }
+};
 
-// Debug-Info
-console.log("Spiel initialisiert. Player ID:", playerId);
-showNotification("Spiel bereit! Erstelle eine Lobby oder trete einer bei.", "success");
+// ===================== INITIALISIERUNG =====================
+debug.log('Initialisiere Anwendung...', 'info');
+
+// Board initialisieren
+initializeBoard();
+
+// Firebase initialisieren
+initializeFirebase().then(() => {
+  // Lobbys laden
+  loadLobbies();
+  
+  // Debug Panel sichtbar machen
+  setTimeout(() => {
+    debug.isVisible = true;
+    document.getElementById('debugPanel').style.display = 'block';
+    debug.updateDebugPanel();
+  }, 1000);
+  
+  debug.log('Anwendung erfolgreich initialisiert', 'success');
+});
+
+// Automatischer Debug-Export
+window.exportDebugLogs = function() {
+  const logs = debug.logs;
+  const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `chess-debug-${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  debug.log('Debug-Logs exportiert', 'success');
+};
+
+// Füge Export-Button hinzu
+setTimeout(() => {
+  const exportBtn = document.createElement('button');
+  exportBtn.innerHTML = '<i class="fas fa-download"></i> Logs exportieren';
+  exportBtn.style.cssText = `
+    position: fixed;
+    bottom: 320px;
+    right: 10px;
+    background: #9b59b6;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    z-index: 9999;
+  `;
+  exportBtn.onclick = window.exportDebugLogs;
+  document.body.appendChild(exportBtn);
+}, 2000);
+
+// Zeige Willkommensnachricht
+setTimeout(() => {
+  if (!firebaseInitialized) {
+    debug.showError(
+      'Verbindungsproblem', 
+      'Die Verbindung zu Firebase dauert länger als erwartet. ' +
+      'Stelle sicher, dass deine Security Rules korrekt sind: ' +
+      '{ "rules": { ".read": true, ".write": true } }'
+    );
+  }
+}, 5000);
+
 </script>
 </body>
 </html>
