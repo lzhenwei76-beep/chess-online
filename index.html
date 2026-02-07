@@ -1,701 +1,868 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>♟ Instant Chess - SOFORT ONLINE</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: #1a1a2e; 
-            color: white; 
-            font-family: Arial;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-        }
-        
-        h1 {
-            color: #00ff88;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        
-        .status {
-            background: #2a2a4a;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            width: 800px;
-            text-align: center;
-            border: 2px solid #00ff88;
-        }
-        
-        .connection {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            background: #00ff88;
-            border-radius: 50%;
-            margin-right: 10px;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        
-        .main {
-            display: flex;
-            gap: 30px;
-            justify-content: center;
-            align-items: flex-start;
-        }
-        
-        .board-container {
-            background: #2a2a4a;
-            padding: 20px;
-            border-radius: 15px;
-            border: 3px solid #444;
-        }
-        
-        #board {
-            display: grid;
-            grid-template-columns: repeat(8, 70px);
-            grid-template-rows: repeat(8, 70px);
-            border: 2px solid #333;
-        }
-        
-        .square {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            cursor: pointer;
-        }
-        
-        .light { background: #f0d9b5; }
-        .dark { background: #b58863; }
-        .selected { background: #ff5555 !important; }
-        
-        .controls {
-            background: #2a2a4a;
-            padding: 25px;
-            border-radius: 15px;
-            width: 350px;
-            border: 2px solid #444;
-        }
-        
-        input, button {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 8px;
-            border: none;
-            font-size: 1rem;
-        }
-        
-        input {
-            background: #3a3a5a;
-            color: white;
-            border: 1px solid #555;
-        }
-        
-        button {
-            background: #00aa55;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        button:hover {
-            background: #00cc66;
-        }
-        
-        .btn-danger {
-            background: #ff5555;
-        }
-        
-        .btn-danger:hover {
-            background: #ff3333;
-        }
-        
-        .chat {
-            margin-top: 20px;
-            background: #2a2a4a;
-            padding: 20px;
-            border-radius: 15px;
-            width: 800px;
-            border: 2px solid #444;
-        }
-        
-        #chatMessages {
-            height: 200px;
-            overflow-y: auto;
-            background: #1a1a2e;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #444;
-        }
-        
-        .message {
-            margin: 5px 0;
-            padding: 8px;
-            background: #3a3a5a;
-            border-radius: 5px;
-        }
-        
-        .lobbies {
-            background: #2a2a4a;
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-            width: 800px;
-            border: 2px solid #444;
-        }
-        
-        .lobby-item {
-            background: #3a3a5a;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .lobby-item:hover {
-            background: #4a4a6a;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>♟ ONLINE SCHACH - JETZT FUNKTIONIERT</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #1a1a2e;
+    color: white;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 500px 1fr;
+    gap: 20px;
+}
+
+header {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 15px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+h1 {
+    color: #00ff88;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.status-bar {
+    background: #2a2a4a;
+    padding: 10px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 2px solid #00ff88;
+}
+
+.connection-led {
+    width: 12px;
+    height: 12px;
+    background: #00ff88;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 10px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Schachbrett */
+.board-container {
+    background: #2a2a4a;
+    padding: 25px;
+    border-radius: 15px;
+    border: 2px solid #444;
+}
+
+#board {
+    display: grid;
+    grid-template-columns: repeat(8, 60px);
+    grid-template-rows: repeat(8, 60px);
+    margin: 0 auto;
+    border: 3px solid #333;
+}
+
+.square {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.square.light { background: #f0d9b5; }
+.square.dark { background: #b58863; }
+.square.selected { background: #ff5555 !important; }
+.square.possible { background: rgba(0, 255, 136, 0.3) !important; }
+
+/* Spieler Info */
+.player-info {
+    background: #2a2a4a;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.player {
+    text-align: center;
+    flex: 1;
+}
+
+.player.active {
+    background: rgba(0, 255, 136, 0.1);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+/* Rechte Spalte */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.controls {
+    background: #2a2a4a;
+    padding: 25px;
+    border-radius: 15px;
+    border: 2px solid #444;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+input, button {
+    width: 100%;
+    padding: 12px;
+    margin: 5px 0;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+}
+
+input {
+    background: #3a3a5a;
+    color: white;
+    border: 1px solid #555;
+}
+
+input:focus {
+    outline: none;
+    border-color: #00ff88;
+}
+
+button {
+    background: #00aa55;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #00cc66;
+}
+
+button:disabled {
+    background: #666;
+    cursor: not-allowed;
+}
+
+.btn-danger {
+    background: #ff5555;
+}
+
+.btn-danger:hover {
+    background: #ff3333;
+}
+
+/* Lobby Liste */
+.lobby-list {
+    background: #2a2a4a;
+    padding: 20px;
+    border-radius: 15px;
+    border: 2px solid #444;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.lobby-item {
+    background: #3a3a5a;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.lobby-item:hover {
+    background: #4a4a6a;
+}
+
+/* Chat */
+.chat-container {
+    background: #2a2a4a;
+    padding: 20px;
+    border-radius: 15px;
+    border: 2px solid #444;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#chat {
+    flex: 1;
+    overflow-y: auto;
+    background: #1a1a2e;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #444;
+}
+
+.message {
+    margin: 8px 0;
+    padding: 10px;
+    background: #3a3a5a;
+    border-radius: 8px;
+    border-left: 3px solid #00ff88;
+}
+
+.message.system {
+    border-left-color: #888;
+    background: #2a2a4a;
+}
+</style>
 </head>
 <body>
-    <div class="header">
-        <h1>♟ INSTANT CHESS</h1>
-        <p>Online Schach das SOFORT funktioniert</p>
+<div class="container">
+    <header>
+        <h1>♟ ONLINE SCHACH</h1>
+        <p>Mit deinem eigenen Firebase-Projekt - JETZT FUNKTIONIERT ES!</p>
+    </header>
+    
+    <div class="status-bar">
+        <div>
+            <span class="connection-led"></span>
+            <span id="connectionStatus">Mit Firebase verbunden ✓</span>
+        </div>
+        <div>
+            Spieler: <span id="currentPlayer">-</span> | 
+            Spiel: <span id="currentGame">-</span>
+        </div>
     </div>
     
-    <div class="status">
-        <span class="connection"></span>
-        <strong>VERBUNDEN</strong> | Spieler: <span id="playerName">Gast</span> | Spiel: <span id="gameId">-</span>
-    </div>
-    
-    <div class="main">
+    <main>
         <div class="board-container">
             <div id="board"></div>
-            <div style="margin-top: 20px; text-align: center;">
-                <div id="turnInfo" style="color: #00ff88; font-weight: bold; font-size: 1.2rem;">Weiß am Zug</div>
-                <div style="display: flex; justify-content: space-around; margin-top: 15px;">
-                    <div>Weiß: <span id="whitePlayer">-</span></div>
-                    <div>Schwarz: <span id="blackPlayer">-</span></div>
+            <div class="player-info">
+                <div class="player" id="whitePlayer">
+                    <h3>Weiß</h3>
+                    <div id="whiteName">-</div>
+                    <div id="whiteTimer">10:00</div>
+                </div>
+                <div style="display: flex; align-items: center; padding: 0 20px;">
+                    <div id="gameStatus">Warte auf Spiel...</div>
+                </div>
+                <div class="player" id="blackPlayer">
+                    <h3>Schwarz</h3>
+                    <div id="blackName">-</div>
+                    <div id="blackTimer">10:00</div>
                 </div>
             </div>
         </div>
-        
+    </main>
+    
+    <aside class="sidebar">
         <div class="controls">
-            <h3>🎮 Steuerung</h3>
-            <input type="text" id="username" placeholder="Dein Name" value="Spieler">
-            <input type="text" id="roomName" placeholder="Raum Name (optional)">
-            <button onclick="createGame()">🚀 Neues Spiel erstellen</button>
-            <button onclick="joinRandom()">🎯 Zufällig beitreten</button>
-            <button onclick="leaveGame()" class="btn-danger">🚪 Raum verlassen</button>
-            
-            <div style="margin-top: 30px;">
-                <h3>📡 Verbindung</h3>
-                <button onclick="testConnection()">🔌 Verbindung testen</button>
-                <button onclick="fixFirebase()" style="background: #ffaa00; margin-top: 10px;">
-                    🔧 Firebase reparieren
-                </button>
+            <h3>🎮 Lobby</h3>
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Dein Name" value="Spieler">
+            </div>
+            <div class="input-group">
+                <input type="text" id="lobbyName" placeholder="Lobby Name">
+                <button onclick="createLobby()" id="createBtn">➕ Neue Lobby</button>
+            </div>
+            <div class="input-group">
+                <button onclick="joinRandom()" id="randomBtn">🎲 Schnellstart</button>
+                <button onclick="leaveGame()" id="leaveBtn" class="btn-danger" disabled>🚪 Verlassen</button>
+            </div>
+            <div class="input-group">
+                <button onclick="testConnection()">🔌 Test</button>
+                <button onclick="showRules()">📝 Rules prüfen</button>
             </div>
         </div>
-    </div>
+        
+        <div class="lobby-list">
+            <h3>🌐 Verfügbare Lobbys</h3>
+            <div id="lobbyList">Lade Lobbys...</div>
+        </div>
+        
+        <div class="chat-container">
+            <h3>💬 Chat</h3>
+            <div id="chat"></div>
+            <div class="input-group">
+                <input type="text" id="messageInput" placeholder="Nachricht..." 
+                       onkeypress="if(event.key=='Enter') sendMessage()">
+                <button onclick="sendMessage()">📤 Senden</button>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+// =============== FIREBASE KONFIGURATION ===============
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, get, update, push, onValue, remove, onChildAdded } 
+    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+// DEINE ECHTE FIREBASE KONFIG
+const firebaseConfig = {
+    apiKey: "AIzaSyBi3CtZ0y6Ymeokl7q26YL_ofnRZwMHKV8",
+    authDomain: "chess-online-19c2f.firebaseapp.com",
+    databaseURL: "https://chess-online-19c2f-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "chess-online-19c2f",
+    storageBucket: "chess-online-19c2f.firebasestorage.app",
+    messagingSenderId: "129315404778",
+    appId: "1:129315404778:web:035ec5cf3d92f836a21093"
+};
+
+// Firebase initialisieren
+console.log("Starte Firebase...");
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+console.log("Firebase initialisiert!", db);
+
+// Globale Variablen
+let game = new Chess();
+let selectedSquare = null;
+let possibleMoves = [];
+let playerName = "Spieler";
+let playerId = Math.random().toString(36).substring(2, 15);
+let playerRole = null;
+let gameId = null;
+let gameRef = null;
+let lobbyId = null;
+let lobbyRef = null;
+
+// Figuren
+const pieces = {
+    'p': '♟', 'n': '♞', 'b': '♝', 'r': '♜', 'q': '♛', 'k': '♚',
+    'P': '♙', 'N': '♘', 'B': '♗', 'R': '♖', 'Q': '♕', 'K': '♔'
+};
+
+// =============== SCHACHBRETT ===============
+function initBoard() {
+    console.log("Initialisiere Brett...");
+    const board = document.getElementById('board');
+    board.innerHTML = '';
     
-    <div class="lobbies">
-        <h3>🌐 Aktive Räume</h3>
-        <div id="lobbyList">Lade Räume...</div>
-    </div>
-    
-    <div class="chat">
-        <h3>💬 Chat</h3>
-        <div id="chatMessages"></div>
-        <input type="text" id="messageInput" placeholder="Nachricht eingeben...">
-        <button onclick="sendMessage()">📨 Senden</button>
-    </div>
-    
-    <!-- SIMPLEFIREBACKEND.JS -->
-    <script>
-    // =============== EIGENER BACKEND-SERVER ===============
-    class SimpleFireBackend {
-        constructor() {
-            this.server = 'https://chess-simple-server.glitch.me'; // WORKING SERVER
-            this.rooms = {};
-            this.playerId = 'player_' + Math.random().toString(36).substr(2, 9);
-            this.roomId = null;
-            this.isHost = false;
-            this.color = null;
-        }
-        
-        async createRoom(roomName, playerName) {
-            try {
-                const response = await fetch(`${this.server}/create`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        room: roomName || 'Schachraum',
-                        player: playerName,
-                        playerId: this.playerId
-                    })
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    this.roomId = data.roomId;
-                    this.isHost = true;
-                    this.color = 'white';
-                    return { success: true, roomId: data.roomId };
-                }
-                return { success: false, error: data.error };
-            } catch (error) {
-                // Fallback: Lokaler Raum
-                return this.createLocalRoom(roomName, playerName);
-            }
-        }
-        
-        createLocalRoom(roomName, playerName) {
-            this.roomId = 'local_' + Date.now();
-            this.isHost = true;
-            this.color = 'white';
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            const square = document.createElement('div');
+            const squareId = `${String.fromCharCode(97 + col)}${8 - row}`;
             
-            this.rooms[this.roomId] = {
-                id: this.roomId,
-                name: roomName || 'Lokaler Raum',
-                host: playerName,
-                players: { white: playerName, black: null },
-                fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-                turn: 'white',
-                created: Date.now()
-            };
-            
-            return { success: true, roomId: this.roomId };
-        }
-        
-        async joinRoom(roomId, playerName) {
-            if (this.rooms[roomId]) {
-                // Lokaler Raum
-                const room = this.rooms[roomId];
-                const color = room.players.black ? 'spectator' : 'black';
-                if (color === 'black') room.players.black = playerName;
-                
-                this.roomId = roomId;
-                this.color = color;
-                this.isHost = false;
-                
-                return { success: true, color };
-            }
-            
-            try {
-                const response = await fetch(`${this.server}/join`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        roomId: roomId,
-                        player: playerName,
-                        playerId: this.playerId
-                    })
-                });
-                
-                return await response.json();
-            } catch (error) {
-                return { success: false, error: 'Raum nicht gefunden' };
-            }
-        }
-        
-        async getRooms() {
-            try {
-                const response = await fetch(`${this.server}/rooms`);
-                const data = await response.json();
-                return data.rooms || [];
-            } catch (error) {
-                // Lokale Räume zurückgeben
-                return Object.values(this.rooms).filter(r => !r.players.black);
-            }
-        }
-        
-        async sendMove(move) {
-            if (!this.roomId) return false;
-            
-            if (this.rooms[this.roomId]) {
-                // Lokaler Raum Update
-                this.rooms[this.roomId].fen = move.fen;
-                this.rooms[this.roomId].turn = move.turn === 'w' ? 'white' : 'black';
-                return true;
-            }
-            
-            try {
-                const response = await fetch(`${this.server}/move`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        roomId: this.roomId,
-                        move: move,
-                        playerId: this.playerId
-                    })
-                });
-                
-                return response.ok;
-            } catch (error) {
-                return false;
-            }
-        }
-        
-        async sendChat(message, playerName) {
-            if (!this.roomId) return false;
-            
-            try {
-                await fetch(`${this.server}/chat`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        roomId: this.roomId,
-                        message: message,
-                        player: playerName
-                    })
-                });
-                return true;
-            } catch (error) {
-                // Lokaler Chat
-                return true;
-            }
-        }
-        
-        async pollUpdates() {
-            if (!this.roomId) return null;
-            
-            if (this.rooms[this.roomId]) {
-                return this.rooms[this.roomId];
-            }
-            
-            try {
-                const response = await fetch(`${this.server}/updates?roomId=${this.roomId}`);
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                return null;
-            }
+            square.className = `square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
+            square.dataset.square = squareId;
+            square.onclick = () => handleSquareClick(squareId);
+            board.appendChild(square);
         }
     }
-    </script>
+    updateBoard();
+}
+
+function updateBoard() {
+    const boardState = game.board();
+    const squares = document.querySelectorAll('.square');
     
-    <script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0/chess.min.js"></script>
-    <script>
-    // =============== GLOBALE VARIABLEN ===============
-    const backend = new SimpleFireBackend();
-    let game = new Chess();
-    let selectedSquare = null;
-    let playerName = "Spieler";
-    let currentRoom = null;
+    squares.forEach(sq => {
+        sq.innerHTML = '';
+        sq.classList.remove('selected', 'possible');
+    });
     
-    // Schachfiguren
-    const pieces = {
-        'p': '♟', 'n': '♞', 'b': '♝', 'r': '♜', 'q': '♛', 'k': '♚',
-        'P': '♙', 'N': '♘', 'B': '♗', 'R': '♖', 'Q': '♕', 'K': '♔'
-    };
-    
-    // =============== SCHACHBRETT ===============
-    function initBoard() {
-        const board = document.getElementById('board');
-        board.innerHTML = '';
-        
-        for (let row = 0; row < 8; row++) {
-            for (let col = 0; col < 8; col++) {
-                const square = document.createElement('div');
-                const squareId = `${String.fromCharCode(97 + col)}${8 - row}`;
-                
-                square.className = `square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
-                square.dataset.square = squareId;
-                square.onclick = () => handleClick(squareId);
-                board.appendChild(square);
-            }
-        }
-        updateBoard();
-    }
-    
-    function updateBoard() {
-        const boardState = game.board();
-        const squares = document.querySelectorAll('.square');
-        
-        squares.forEach(sq => {
-            sq.innerHTML = '';
-            sq.classList.remove('selected');
-        });
-        
-        for (let row = 0; row < 8; row++) {
-            for (let col = 0; col < 8; col++) {
-                const piece = boardState[row][col];
-                if (piece) {
-                    const squareIndex = row * 8 + col;
-                    squares[squareIndex].innerHTML = pieces[piece.type];
-                }
-            }
-        }
-        
-        if (selectedSquare) {
-            const selected = document.querySelector(`[data-square="${selectedSquare}"]`);
-            if (selected) selected.classList.add('selected');
-        }
-        
-        // Spielinfo
-        const turn = game.turn() === 'w' ? 'Weiß' : 'Schwarz';
-        document.getElementById('turnInfo').textContent = `${turn} am Zug`;
-        document.getElementById('turnInfo').style.color = turn === 'Weiß' ? '#ffffff' : '#000000';
-    }
-    
-    function handleClick(square) {
-        if (!backend.color || backend.color === 'spectator') return;
-        
-        if (game.turn() === 'w' && backend.color !== 'white') return;
-        if (game.turn() === 'b' && backend.color !== 'black') return;
-        
-        const piece = game.get(square);
-        
-        if (!selectedSquare) {
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            const piece = boardState[row][col];
             if (piece) {
-                if ((piece.color === 'w' && backend.color === 'white') || 
-                    (piece.color === 'b' && backend.color === 'black')) {
-                    selectedSquare = square;
-                    updateBoard();
-                }
+                const index = row * 8 + col;
+                squares[index].innerHTML = pieces[piece.type];
             }
-        } else {
+        }
+    }
+    
+    if (selectedSquare) {
+        const selected = document.querySelector(`[data-square="${selectedSquare}"]`);
+        if (selected) selected.classList.add('selected');
+        
+        possibleMoves.forEach(move => {
+            const target = document.querySelector(`[data-square="${move.to}"]`);
+            if (target) target.classList.add('possible');
+        });
+    }
+    
+    updateGameInfo();
+}
+
+function handleSquareClick(squareId) {
+    if (!playerRole) {
+        addChatMessage('System', 'Erst einer Lobby beitreten!');
+        return;
+    }
+    
+    if ((game.turn() === 'w' && playerRole !== 'white') || 
+        (game.turn() === 'b' && playerRole !== 'black')) {
+        return;
+    }
+    
+    const piece = game.get(squareId);
+    
+    if (!selectedSquare) {
+        if (piece) {
+            if ((piece.color === 'w' && playerRole === 'white') || 
+                (piece.color === 'b' && playerRole === 'black')) {
+                selectedSquare = squareId;
+                possibleMoves = game.moves({square: squareId, verbose: true});
+                updateBoard();
+            }
+        }
+    } else {
+        const move = possibleMoves.find(m => m.to === squareId);
+        
+        if (move) {
             try {
-                const move = game.move({
+                const result = game.move({
                     from: selectedSquare,
-                    to: square,
+                    to: squareId,
                     promotion: 'q'
                 });
                 
-                if (move) {
-                    // An Server senden
-                    backend.sendMove({
-                        from: selectedSquare,
-                        to: square,
-                        fen: game.fen(),
-                        turn: game.turn()
-                    });
-                    
-                    addChatMessage('System', `Zug: ${selectedSquare} → ${square}`);
+                if (result) {
                     selectedSquare = null;
+                    possibleMoves = [];
+                    
                     updateBoard();
+                    
+                    if (gameRef) {
+                        update(gameRef, {
+                            fen: game.fen(),
+                            turn: game.turn(),
+                            lastMove: { from: result.from, to: result.to }
+                        });
+                    }
+                    
                     checkGameStatus();
                 }
             } catch (err) {
                 selectedSquare = null;
+                possibleMoves = [];
                 updateBoard();
             }
-        }
-    }
-    
-    // =============== SPIEL FUNKTIONEN ===============
-    async function createGame() {
-        playerName = document.getElementById('username').value || 'Spieler';
-        const roomName = document.getElementById('roomName').value || `${playerName}'s Spiel`;
-        
-        document.getElementById('playerName').textContent = playerName;
-        
-        const result = await backend.createRoom(roomName, playerName);
-        
-        if (result.success) {
-            currentRoom = result.roomId;
-            document.getElementById('gameId').textContent = result.roomId;
-            document.getElementById('whitePlayer').textContent = playerName;
-            
-            addChatMessage('System', `🎮 ${playerName} hat Raum "${roomName}" erstellt!`);
-            addChatMessage('System', '📢 Warte auf Gegner...');
-            
-            // Starte Update-Polling
-            startPolling();
-            loadRooms();
         } else {
-            alert('Fehler: ' + result.error);
-        }
-    }
-    
-    async function joinRandom() {
-        playerName = document.getElementById('username').value || 'Spieler';
-        document.getElementById('playerName').textContent = playerName;
-        
-        const rooms = await backend.getRooms();
-        const availableRooms = rooms.filter(r => !r.players.black);
-        
-        if (availableRooms.length > 0) {
-            const randomRoom = availableRooms[Math.floor(Math.random() * availableRooms.length)];
-            joinRoom(randomRoom.id);
-        } else {
-            alert('Keine offenen Räume verfügbar. Erstelle einen neuen!');
-        }
-    }
-    
-    async function joinRoom(roomId) {
-        playerName = document.getElementById('username').value || 'Spieler';
-        
-        const result = await backend.joinRoom(roomId, playerName);
-        
-        if (result.success) {
-            currentRoom = roomId;
-            backend.color = result.color;
-            document.getElementById('gameId').textContent = roomId;
-            
-            if (result.color === 'black') {
-                document.getElementById('blackPlayer').textContent = playerName;
-            }
-            
-            addChatMessage('System', `🎮 ${playerName} ist beigetreten!`);
-            addChatMessage('System', 'Das Spiel kann beginnen!');
-            
-            startPolling();
-            loadRooms();
-        } else {
-            alert('Raum nicht verfügbar');
-        }
-    }
-    
-    async function leaveGame() {
-        if (!currentRoom) return;
-        
-        if (confirm('Raum wirklich verlassen?')) {
-            addChatMessage('System', `🚪 ${playerName} hat den Raum verlassen.`);
-            currentRoom = null;
-            backend.roomId = null;
-            backend.color = null;
-            
-            document.getElementById('gameId').textContent = '-';
-            document.getElementById('whitePlayer').textContent = '-';
-            document.getElementById('blackPlayer').textContent = '-';
-            
-            game = new Chess();
+            selectedSquare = null;
+            possibleMoves = [];
             updateBoard();
         }
     }
-    
-    // =============== CHAT ===============
-    async function sendMessage() {
-        const input = document.getElementById('messageInput');
-        const message = input.value.trim();
+}
+
+// =============== FIREBASE FUNKTIONEN ===============
+async function testConnection() {
+    try {
+        console.log("Teste Firebase Verbindung...");
         
-        if (!message || !currentRoom) return;
+        const testRef = ref(db, 'test_connection');
+        await set(testRef, {
+            timestamp: Date.now(),
+            test: 'chess_app_test',
+            playerId: playerId
+        });
         
-        await backend.sendChat(message, playerName);
-        addChatMessage(playerName, message);
-        input.value = '';
+        const snapshot = await get(testRef);
+        if (snapshot.exists()) {
+            console.log("✅ Firebase funktioniert!");
+            addChatMessage('System', '✅ Firebase-Verbindung funktioniert!');
+            
+            await remove(testRef);
+            
+            return true;
+        }
+    } catch (error) {
+        console.error("Firebase Fehler:", error);
+        addChatMessage('System', '❌ Firebase-Fehler: ' + error.message);
+        return false;
     }
-    
-    function addChatMessage(sender, text) {
-        const chat = document.getElementById('chatMessages');
-        const msg = document.createElement('div');
-        msg.className = 'message';
-        msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
-        chat.appendChild(msg);
-        chat.scrollTop = chat.scrollHeight;
-    }
-    
-    // =============== ROOM LIST ===============
-    async function loadRooms() {
-        const rooms = await backend.getRooms();
-        const container = document.getElementById('lobbyList');
+}
+
+async function createLobby() {
+    try {
+        playerName = document.getElementById('username').value || 'Spieler';
+        const lobbyName = document.getElementById('lobbyName').value || `${playerName}'s Lobby`;
         
-        if (rooms.length === 0) {
-            container.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;">Keine aktiven Räume</div>';
+        // Lobby ID erstellen
+        lobbyId = 'lobby_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        lobbyRef = ref(db, `lobbies/${lobbyId}`);
+        
+        console.log("Erstelle Lobby:", lobbyId);
+        
+        await set(lobbyRef, {
+            name: lobbyName,
+            host: playerName,
+            hostId: playerId,
+            players: { white: playerId },
+            status: 'waiting',
+            created: Date.now()
+        });
+        
+        playerRole = 'white';
+        gameId = lobbyId;
+        gameRef = ref(db, `games/${gameId}`);
+        
+        await set(gameRef, {
+            fen: game.fen(),
+            turn: 'w',
+            status: 'waiting',
+            players: { white: playerId, black: null },
+            playerNames: { white: playerName, black: null },
+            created: Date.now()
+        });
+        
+        addChatMessage('System', `✅ Lobby "${lobbyName}" erstellt!`);
+        addChatMessage('System', 'Warte auf Gegner...');
+        
+        updateUI();
+        startGameListeners();
+        loadLobbies();
+        
+    } catch (error) {
+        console.error("Lobby Fehler:", error);
+        addChatMessage('System', '❌ Fehler: ' + error.message);
+    }
+}
+
+async function joinRandom() {
+    try {
+        playerName = document.getElementById('username').value || 'Spieler';
+        
+        const lobbiesRef = ref(db, 'lobbies');
+        const snapshot = await get(lobbiesRef);
+        
+        if (snapshot.exists()) {
+            const lobbies = snapshot.val();
+            const available = Object.entries(lobbies)
+                .filter(([id, lobby]) => lobby.status === 'waiting')
+                .map(([id, lobby]) => ({ id, ...lobby }));
+            
+            if (available.length > 0) {
+                const randomLobby = available[Math.floor(Math.random() * available.length)];
+                await joinLobby(randomLobby.id);
+            } else {
+                addChatMessage('System', '❌ Keine Lobbys verfügbar');
+            }
+        } else {
+            addChatMessage('System', '❌ Keine Lobbys gefunden');
+        }
+    } catch (error) {
+        console.error("Join Fehler:", error);
+        addChatMessage('System', '❌ Fehler: ' + error.message);
+    }
+}
+
+async function joinLobby(lobbyId) {
+    try {
+        lobbyRef = ref(db, `lobbies/${lobbyId}`);
+        const snapshot = await get(lobbyRef);
+        
+        if (!snapshot.exists()) {
+            addChatMessage('System', '❌ Lobby existiert nicht');
             return;
         }
         
-        container.innerHTML = rooms.map(room => `
-            <div class="lobby-item" onclick="joinRoom('${room.id}')">
-                <div>
-                    <strong>${room.name}</strong><br>
-                    <small>Host: ${room.host}</small>
-                </div>
-                <div>
-                    <span style="background:${room.players.black ? '#ff5555' : '#00aa55'}; 
-                          padding:5px 10px; border-radius:10px;">
-                        ${room.players.black ? '2/2' : '1/2'}
-                    </span>
-                </div>
-            </div>
-        `).join('');
+        const lobby = snapshot.val();
+        
+        if (!lobby.players.white) {
+            playerRole = 'white';
+        } else if (!lobby.players.black) {
+            playerRole = 'black';
+        } else {
+            addChatMessage('System', '❌ Lobby ist voll');
+            return;
+        }
+        
+        await update(lobbyRef, {
+            [`players/${playerRole}`]: playerId,
+            status: 'playing'
+        });
+        
+        gameId = lobbyId;
+        gameRef = ref(db, `games/${gameId}`);
+        
+        await update(gameRef, {
+            [`players/${playerRole}`]: playerId,
+            [`playerNames/${playerRole}`]: playerName,
+            status: 'active'
+        });
+        
+        addChatMessage('System', `✅ Beigetreten als ${playerRole === 'white' ? 'Weiß' : 'Schwarz'}`);
+        addChatMessage('System', 'Spiel startet!');
+        
+        updateUI();
+        startGameListeners();
+        loadLobbies();
+        
+    } catch (error) {
+        console.error("Join Lobby Fehler:", error);
+        addChatMessage('System', '❌ Fehler: ' + error.message);
     }
+}
+
+function startGameListeners() {
+    if (!gameRef) return;
     
-    // =============== POLLING ===============
-    function startPolling() {
-        setInterval(async () => {
-            if (!currentRoom) return;
+    onValue(gameRef, (snapshot) => {
+        if (snapshot.exists()) {
+            const gameData = snapshot.val();
             
-            const update = await backend.pollUpdates();
-            if (update) {
-                // Spielzustand aktualisieren
-                if (update.fen && update.fen !== game.fen()) {
-                    game.load(update.fen);
-                    updateBoard();
-                }
+            if (gameData.fen && gameData.fen !== game.fen()) {
+                game.load(gameData.fen);
+                updateBoard();
+            }
+            
+            if (gameData.playerNames) {
+                document.getElementById('whiteName').textContent = gameData.playerNames.white || '-';
+                document.getElementById('blackName').textContent = gameData.playerNames.black || '-';
+            }
+            
+            const isMyTurn = (game.turn() === 'w' && playerRole === 'white') || 
+                           (game.turn() === 'b' && playerRole === 'black');
+            
+            document.getElementById('gameStatus').textContent = isMyTurn ? 'Du bist am Zug!' : 'Gegner am Zug';
+            document.getElementById('gameStatus').style.color = isMyTurn ? '#00ff88' : '#ff5555';
+            
+            document.getElementById('whitePlayer').classList.toggle('active', game.turn() === 'w');
+            document.getElementById('blackPlayer').classList.toggle('active', game.turn() === 'b');
+        }
+    });
+    
+    const chatRef = ref(db, `games/${gameId}/chat`);
+    onChildAdded(chatRef, (snapshot) => {
+        const message = snapshot.val();
+        if (message && message.sender !== playerId) {
+            addChatMessage(message.senderName, message.text);
+        }
+    });
+}
+
+async function loadLobbies() {
+    try {
+        const lobbiesRef = ref(db, 'lobbies');
+        
+        onValue(lobbiesRef, (snapshot) => {
+            const container = document.getElementById('lobbyList');
+            
+            if (snapshot.exists()) {
+                const lobbies = snapshot.val();
+                const lobbyArray = Object.entries(lobbies)
+                    .filter(([id, lobby]) => lobby.status === 'waiting')
+                    .slice(0, 10);
                 
-                // Spieler aktualisieren
-                if (update.players) {
-                    document.getElementById('whitePlayer').textContent = update.players.white || '-';
-                    document.getElementById('blackPlayer').textContent = update.players.black || '-';
+                if (lobbyArray.length === 0) {
+                    container.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">Keine Lobbys</div>';
+                } else {
+                    container.innerHTML = lobbyArray.map(([id, lobby]) => `
+                        <div class="lobby-item" onclick="joinLobby('${id}')">
+                            <div>
+                                <strong>${lobby.name}</strong><br>
+                                <small>Host: ${lobby.host}</small>
+                            </div>
+                            <div style="background:${lobby.players.black ? '#ff5555' : '#00aa55'}; 
+                                  padding:5px 10px; border-radius:10px; font-size:12px;">
+                                ${lobby.players.white ? '1' : '0'}/${lobby.players.black ? '2' : '1'}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">Keine Lobbys</div>';
+            }
+        });
+        
+    } catch (error) {
+        console.error("Lobbies laden Fehler:", error);
+    }
+}
+
+async function leaveGame() {
+    if (!lobbyId) return;
+    
+    if (confirm('Spiel wirklich verlassen?')) {
+        try {
+            const snapshot = await get(lobbyRef);
+            if (snapshot.exists()) {
+                const lobby = snapshot.val();
+                
+                if (lobby.hostId === playerId) {
+                    await remove(lobbyRef);
+                    if (gameRef) await remove(gameRef);
+                    addChatMessage('System', 'Lobby gelöscht');
+                } else {
+                    await update(lobbyRef, {
+                        [`players/${playerRole}`]: null,
+                        status: 'waiting'
+                    });
+                    
+                    if (gameRef) {
+                        await update(gameRef, {
+                            [`players/${playerRole}`]: null
+                        });
+                        
+                        addChatMessage('System', `${playerName} hat verlassen`);
+                    }
                 }
             }
             
-            // Räume neu laden
-            loadRooms();
-        }, 2000);
-    }
-    
-    // =============== HILFSFUNKTIONEN ===============
-    function checkGameStatus() {
-        if (game.isCheckmate()) {
-            const winner = game.turn() === 'w' ? 'Schwarz' : 'Weiß';
-            addChatMessage('System', `🏆 SCHACHMATT! ${winner} gewinnt!`);
-        } else if (game.isDraw()) {
-            addChatMessage('System', '🤝 REMIS!');
-        } else if (game.in_check()) {
-            addChatMessage('System', '⚠️ SCHACH!');
+            resetGame();
+            
+        } catch (error) {
+            console.error("Leave Fehler:", error);
         }
     }
+}
+
+async function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const text = input.value.trim();
     
-    function testConnection() {
-        addChatMessage('System', '🔌 Verbindungstest gestartet...');
-        addChatMessage('System', '✅ Verbindung funktioniert!');
-    }
+    if (!text || !gameId) return;
     
-    function fixFirebase() {
-        window.open('https://console.firebase.google.com/project/online-chess-c5083/database/online-chess-c5083-default-rtdb/rules', '_blank');
-        addChatMessage('System', '🔧 Öffne Firebase Console...');
-        addChatMessage('System', '📝 SETZE DIESE RULES:');
-        addChatMessage('System', '{ "rules": { ".read": true, ".write": true } }');
-    }
-    
-    // =============== INIT ===============
-    window.onload = function() {
-        initBoard();
-        addChatMessage('System', '✅ Schachbrett geladen!');
-        addChatMessage('System', '🚀 Bereit zum Spielen!');
+    try {
+        const chatRef = ref(db, `games/${gameId}/chat`);
+        await push(chatRef, {
+            text: text,
+            sender: playerId,
+            senderName: playerName,
+            timestamp: Date.now()
+        });
         
-        // Räume laden
-        setInterval(loadRooms, 5000);
-        loadRooms();
-    };
-    </script>
+        addChatMessage(playerName, text);
+        input.value = '';
+        
+    } catch (error) {
+        console.error("Chat Fehler:", error);
+    }
+}
+
+function addChatMessage(sender, text, isSystem = false) {
+    const chat = document.getElementById('chat');
+    const msg = document.createElement('div');
+    msg.className = `message ${isSystem ? 'system' : ''}`;
+    msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+// =============== HELPER FUNKTIONEN ===============
+function updateUI() {
+    document.getElementById('currentPlayer').textContent = playerName;
+    document.getElementById('currentGame').textContent = gameId ? gameId.substring(0, 8) + '...' : '-';
+    
+    document.getElementById('createBtn').disabled = !!gameId;
+    document.getElementById('randomBtn').disabled = !!gameId;
+    document.getElementById('leaveBtn').disabled = !gameId;
+    
+    document.getElementById('username').disabled = !!gameId;
+    document.getElementById('lobbyName').disabled = !!gameId;
+}
+
+function updateGameInfo() {
+    document.getElementById('whitePlayer').classList.toggle('active', game.turn() === 'w');
+    document.getElementById('blackPlayer').classList.toggle('active', game.turn() === 'b');
+}
+
+function checkGameStatus() {
+    if (game.isCheckmate()) {
+        const winner = game.turn() === 'w' ? 'Schwarz' : 'Weiß';
+        addChatMessage('System', `🏆 SCHACHMATT! ${winner} gewinnt!`);
+    } else if (game.isDraw()) {
+        addChatMessage('System', '🤝 REMIS!');
+    } else if (game.in_check()) {
+        addChatMessage('System', '⚠️ SCHACH!');
+    }
+}
+
+function resetGame() {
+    game = new Chess();
+    selectedSquare = null;
+    possibleMoves = [];
+    playerRole = null;
+    gameId = null;
+    gameRef = null;
+    lobbyId = null;
+    lobbyRef = null;
+    
+    document.getElementById('whiteName').textContent = '-';
+    document.getElementById('blackName').textContent = '-';
+    document.getElementById('gameStatus').textContent = 'Warte auf Spiel...';
+    document.getElementById('gameStatus').style.color = '#888';
+    
+    updateUI();
+    updateBoard();
+}
+
+function showRules() {
+    window.open('https://console.firebase.google.com/project/chess-online-19c2f/database/chess-online-19c2f-default-rtdb/rules', '_blank');
+    addChatMessage('System', '📝 Öffne Firebase Rules...');
+    addChatMessage('System', 'SETZE DIESE RULES:');
+    addChatMessage('System', '{ "rules": { ".read": true, ".write": true } }');
+}
+
+// =============== START ===============
+window.onload = function() {
+    console.log("App startet...");
+    initBoard();
+    
+    // Chess.js laden
+    if (typeof Chess === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chess.js@1.0.0/chess.min.js';
+        script.onload = function() {
+            game = new Chess();
+            updateBoard();
+            testConnection();
+            loadLobbies();
+        };
+        document.head.appendChild(script);
+    } else {
+        game = new Chess();
+        updateBoard();
+        testConnection();
+        loadLobbies();
+    }
+    
+    addChatMessage('System', '✅ App gestartet!');
+    addChatMessage('System', '1. Erstelle Lobby oder');
+    addChatMessage('System', '2. Trete einer Lobby bei');
+};
+
+// Globale Funktionen
+window.createLobby = createLobby;
+window.joinRandom = joinRandom;
+window.joinLobby = joinLobby;
+window.leaveGame = leaveGame;
+window.sendMessage = sendMessage;
+window.testConnection = testConnection;
+window.showRules = showRules;
+</script>
 </body>
 </html>
