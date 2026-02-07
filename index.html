@@ -1,8 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Online Schach</title>
+
+<style>
+body {
+  background:#111;
+  color:white;
+  font-family:Arial;
+  display:flex;
+  gap:20px;
+  padding:20px;
+}
+
+#left { }
+#right { width:250px; }
+
+#board {
+  display:grid;
+  grid-template-columns:repeat(8,60px);
+}
+
+.square {
+  width:60px;
+  height:60px;
+  font-size:36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+
+.white { background:#eee; color:black; }
+.black { background:#555; }
+.selected { outline:3px solid red; }
+
+#chat {
+  height:360px;
+  overflow-y:auto;
+  border:1px solid #444;
+  padding:5px;
+  margin-bottom:5px;
+}
+
+input, button {
+  width:100%;
+  margin-top:5px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="left">
+  <h2>♟ Online Schach</h2>
+  <input id="gameId" placeholder="Game ID">
+  <button onclick="joinGame()">Beitreten / Erstellen</button>
+  <p id="role"></p>
+  <div id="board"></div>
+</div>
+
+<div id="right">
+  <h3>💬 Chat</h3>
+  <div id="chat"></div>
+  <input id="msg" placeholder="Nachricht">
+  <button onclick="sendMsg()">Senden</button>
+</div>
+
+<!-- chess.js (Regeln) -->
+<script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0/chess.min.js"></script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, set, get, update, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* ✅ DEINE FIREBASE CONFIG (passt perfekt) */
+/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyCEAG-c_hJV5SydzleMsTmid8CDmRSa9Y0",
   authDomain: "online-chess-c5083.firebaseapp.com",
@@ -15,58 +88,103 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const gameRef = ref(db, "game");
 
-/* ===== SCHACH LOGIK ===== */
+/* GAME */
+let gameId, role, chess = new Chess(), selected = null;
+let uid = Math.random().toString(36).slice(2);
 
-let board = [
-"♜","♞","♝","♛","♚","♝","♞","♜",
-"♟","♟","♟","♟","♟","♟","♟","♟",
-"","","","","","","","",
-"","","","","","","","",
-"","","","","","","","",
-"","","","","","","","",
-"♙","♙","♙","♙","♙","♙","♙","♙",
-"♖","♘","♗","♕","♔","♗","♘","♖"
-];
-
-let selected = null;
+const pieces = {
+  p:"♟", r:"♜", n:"♞", b:"♝", q:"♛", k:"♚",
+  P:"♙", R:"♖", N:"♘", B:"♗", Q:"♕", K:"♔"
+};
 
 function drawBoard() {
-  const boardDiv = document.getElementById("board");
-  boardDiv.innerHTML = "";
-  board.forEach((p, i) => {
-    const s = document.createElement("div");
-    s.className = "square " + ((Math.floor(i/8)+i)%2 ? "black":"white");
-    s.textContent = p;
-    s.onclick = () => clickSquare(i);
-    if (i === selected) s.classList.add("selected");
-    boardDiv.appendChild(s);
+  const b = document.getElementById("board");
+  b.innerHTML = "";
+  const board = chess.board().flat();
+  board.forEach((sq,i)=>{
+    const d = document.createElement("div");
+    d.className = "square "+((Math.floor(i/8)+i)%2?"black":"white");
+    if (sq) d.textContent = pieces[sq.color === "w" ? sq.type.toUpperCase() : sq.type];
+    d.onclick = ()=>clickSquare(i);
+    b.appendChild(d);
   });
 }
 
 function clickSquare(i) {
-  if (selected === null) {
-    if (board[i] !== "") selected = i;
+  const file = "abcdefgh"[i%8];
+  const rank = 8-Math.floor(i/8);
+  const square = file+rank;
+
+  if (!selected) {
+    const piece = chess.get(square);
+    if (!piece) return;
+    if ((piece.color==="w" && role!=="white") || (piece.color==="b" && role!=="black")) return;
+    selected = square;
   } else {
-    board[i] = board[selected];
-    board[selected] = "";
+    const move = chess.move({from:selected,to:square});
     selected = null;
-    set(gameRef, board);
+    if (move) {
+      update(ref(db,"games/"+gameId),{ fen: chess.fen() });
+    }
   }
   drawBoard();
 }
 
-window.joinGame = function () {
-  onValue(gameRef, snap => {
-    if (snap.exists()) {
-      board = snap.val();
-      drawBoard();
+/* JOIN GAME */
+window.joinGame = async function() {
+  gameId = document.getElementById("gameId").value || Math.random().toString(36).slice(2,7);
+  document.getElementById("gameId").value = gameId;
+
+  const gameRef = ref(db,"games/"+gameId);
+  const snap = await get(gameRef);
+
+  if (!snap.exists()) {
+    role="white";
+    set(gameRef,{
+      fen: chess.fen(),
+      players:{ white:uid }
+    });
+  } else {
+    const data = snap.val();
+    if (!data.players.black) {
+      role="black";
+      update(gameRef,{ "players/black":uid });
     } else {
-      set(gameRef, board);
+      alert("Spiel voll");
+      return;
     }
+  }
+
+  document.getElementById("role").textContent="Du bist: "+role;
+
+  onValue(gameRef,s=>{
+    chess.load(s.val().fen);
+    drawBoard();
   });
+
+  onValue(ref(db,"games/"+gameId+"/chat"),snap=>{
+    const c=document.getElementById("chat");
+    c.innerHTML="";
+    snap.forEach(m=>{
+      const p=document.createElement("div");
+      p.textContent=m.val().text;
+      c.appendChild(p);
+    });
+    c.scrollTop=9999;
+  });
+};
+
+/* CHAT */
+window.sendMsg = function() {
+  const text=document.getElementById("msg").value;
+  if (!text) return;
+  push(ref(db,"games/"+gameId+"/chat"),{ text });
+  document.getElementById("msg").value="";
 };
 
 drawBoard();
 </script>
+
+</body>
+</html>
