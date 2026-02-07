@@ -1,0 +1,72 @@
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+/* ✅ DEINE FIREBASE CONFIG (passt perfekt) */
+const firebaseConfig = {
+  apiKey: "AIzaSyCEAG-c_hJV5SydzleMsTmid8CDmRSa9Y0",
+  authDomain: "online-chess-c5083.firebaseapp.com",
+  databaseURL: "https://online-chess-c5083-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "online-chess-c5083",
+  storageBucket: "online-chess-c5083.firebasestorage.app",
+  messagingSenderId: "851749075446",
+  appId: "1:851749075446:web:094a7321aeae337c08afd7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const gameRef = ref(db, "game");
+
+/* ===== SCHACH LOGIK ===== */
+
+let board = [
+"♜","♞","♝","♛","♚","♝","♞","♜",
+"♟","♟","♟","♟","♟","♟","♟","♟",
+"","","","","","","","",
+"","","","","","","","",
+"","","","","","","","",
+"","","","","","","","",
+"♙","♙","♙","♙","♙","♙","♙","♙",
+"♖","♘","♗","♕","♔","♗","♘","♖"
+];
+
+let selected = null;
+
+function drawBoard() {
+  const boardDiv = document.getElementById("board");
+  boardDiv.innerHTML = "";
+  board.forEach((p, i) => {
+    const s = document.createElement("div");
+    s.className = "square " + ((Math.floor(i/8)+i)%2 ? "black":"white");
+    s.textContent = p;
+    s.onclick = () => clickSquare(i);
+    if (i === selected) s.classList.add("selected");
+    boardDiv.appendChild(s);
+  });
+}
+
+function clickSquare(i) {
+  if (selected === null) {
+    if (board[i] !== "") selected = i;
+  } else {
+    board[i] = board[selected];
+    board[selected] = "";
+    selected = null;
+    set(gameRef, board);
+  }
+  drawBoard();
+}
+
+window.joinGame = function () {
+  onValue(gameRef, snap => {
+    if (snap.exists()) {
+      board = snap.val();
+      drawBoard();
+    } else {
+      set(gameRef, board);
+    }
+  });
+};
+
+drawBoard();
+</script>
